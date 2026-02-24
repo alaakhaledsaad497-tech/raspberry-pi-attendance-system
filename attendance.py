@@ -6,12 +6,14 @@ import requests
 rd = RFID()
 #api
 api = ""
+
 '''
 When the employee scans the card, the API checks whether the card is in the database or not.
 There are two scenarios:
 First: If the card is in the database, the employee will be marked as attended.
 Second: If the card is not in the database, a message will appear on the LCD.
 '''
+
 #code logic
 try:
  print("please put the card on the reader:")
