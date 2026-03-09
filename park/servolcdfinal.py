@@ -379,10 +379,10 @@ try:
                             lcd.write_string("Access Granted")
                            #opning servo
                             lgpio.tx_servo(h, sp, 2500)
-                            time.sleep(6)
+                            time.sleep(5)
                             #closing servo
                             lgpio.tx_servo(h, sp, 500)
-                            time.sleep(2)
+                            time.sleep(1)
                             #ending pulse
                             lgpio.tx_servo(h, sp, 0)
                             lcd.clear()
