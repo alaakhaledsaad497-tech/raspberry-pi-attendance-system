@@ -22,7 +22,7 @@ from razrc522 import RFID
 import requests
 import time
 
-api = ""
+api = "https://smart-system-attendance-production-d4bd.up.railway.app/api/attendance/card"
 rd = RFID()
 
 print("please put the card:")
