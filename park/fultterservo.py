@@ -38,7 +38,7 @@ while True:
 
         
         requests.post(POST_URL, json={"commandId": data["commandId"]})
-        print("Gate closed ✅")
+        print("Gate closed ")
 
     else:
         print("No commands...")
