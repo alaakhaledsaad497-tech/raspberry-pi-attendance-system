@@ -5,7 +5,7 @@ import lgpio
 
 # Servo Setup
 
-SERVO_PIN = 13
+Sp = 13
 h = lgpio.gpiochip_open(0)
 lgpio.gpio_claim_output(h, Sp)
 
