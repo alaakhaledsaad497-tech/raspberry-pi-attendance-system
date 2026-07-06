@@ -1,0 +1,75 @@
+import lgpio
+import time
+
+# فتح اتصال GPIO
+h = lgpio.gpiochip_open(0)  # chip 0 للراسبيري بي
+
+servo_pin = 18
+
+# === الدوال الأساسية ===
+
+# 1. إعداد الـ PWM للسيرفو
+# Frequency: 50Hz (20ms period)
+frequency = 50
+
+# 2. تحريك السيرفو لزاوية معينة
+def set_angle(handle, pin, angle):
+    """
+    angle: 0-180 degrees
+    pulse width: 500-2500 microseconds
+    """
+    # حساب duty cycle
+    pulse_width = 500 + (angle / 180.0) * 2000
+    duty_cycle = (pulse_width / 20000.0) * 100
+    
+    lgpio.tx_pwm(handle, pin, frequency, duty_cycle)
+    time.sleep(0.5)
+
+# 3. تحريك لمواضع محددة
+def servo_min(handle, pin):
+    """0 degrees"""
+    lgpio.tx_pwm(handle, pin, 50, 2.5)  # 500us
+
+def servo_mid(handle, pin):
+    """90 degrees"""
+    lgpio.tx_pwm(handle, pin, 50, 7.5)  # 1500us
+
+def servo_max(handle, pin):
+    """180 degrees"""
+    lgpio.tx_pwm(handle, pin, 50, 12.5)  # 2500us
+
+# 4. إيقاف PWM
+def servo_stop(handle, pin):
+    lgpio.tx_pwm(handle, pin, 50, 0)
+
+# 5. استخدام pulse width مباشرة (أدق)
+def set_pulse_width(handle, pin, pulse_us):
+    """
+    pulse_us: 500-2500 microseconds
+    500us = 0°, 1500us = 90°, 2500us = 180°
+    """
+    lgpio.tx_servo(handle, pin, pulse_us)
+
+# 6. إغلاق الاتصال
+def cleanup(handle):
+    lgpio.gpiochip_close(handle)
+
+# === أمثلة الاستخدام ===
+
+# طريقة 1: باستخدام tx_pwm
+set_angle(h, servo_pin, 0)      # 0 درجة
+time.sleep(1)
+set_angle(h, servo_pin, 90)     # 90 درجة
+time.sleep(1)
+set_angle(h, servo_pin, 180)    # 180 درجة
+
+# طريقة 2: باستخدام tx_servo (أسهل وأدق)
+lgpio.tx_servo(h, servo_pin, 500)   # 0°
+time.sleep(1)
+lgpio.tx_servo(h, servo_pin, 1500)  # 90°
+time.sleep(1)
+lgpio.tx_servo(h, servo_pin, 2500)  # 180°
+
+# إيقاف
+lgpio.tx_servo(h, servo_pin, 0)
+lgpio.gpiochip_close(h)

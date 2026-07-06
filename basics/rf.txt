@@ -1,0 +1,37 @@
+from razrc522 import RFID
+
+# إنشاء الكائن
+reader = RFID()
+
+# Methods بالترتيب:
+
+# 1. تشغيل/إيقاف الأنتينا
+reader.set_antenna(True)   # تشغيل
+reader.set_antenna(False)  # إيقاف
+
+# 2. انتظار الكارت
+reader.wait_for_tag()
+
+# 3. طلب الكارت
+(error, tag_type) = reader.request()
+
+# 4. قراءة UID (Anti-collision)
+(error, uid) = reader.anticoll()
+
+# 5. تحديد الكارت
+reader.select_tag(uid)
+
+# 6. المصادقة (Authentication)
+(error, data) = reader.card_auth(mode, block, key, uid)
+
+# 7. قراءة بلوك
+(error, data) = reader.read(block)
+
+# 8. كتابة على بلوك
+error = reader.write(block, data)
+
+# 9. إيقاف التشفير
+reader.stop_crypto()
+
+# 10. تنظيف الموارد
+reader.cleanup()

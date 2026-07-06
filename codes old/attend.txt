@@ -1,0 +1,46 @@
+from razrc522 import RFID
+import requests
+import time
+
+API_URL = "http://YOUR_SERVER_IP/create-attendance"
+
+rdr = RFID()
+
+print("System Ready... Scan RFID")
+
+while True:
+    try:
+        print("Waiting for card...")
+        rdr.wait_for_tag()
+
+        (error, tag_type) = rdr.request()
+        if error:
+            continue
+
+        (error, uid) = rdr.anticoll()
+        if error:
+            continue
+
+        card_id = "".join(str(i) for i in uid)
+        print(f"Card Detected: {card_id}")
+
+        payload = {
+            "cardNumber": card_id,
+            "method": "rfid",
+            "deviceId": "raspi-01"
+        }
+
+        response = requests.post(API_URL, json=payload)
+
+        print("API Response:", response.json())
+        print("-------------------------------\n")
+
+        time.sleep(1)
+
+    except KeyboardInterrupt:
+        print("Exiting...")
+        rdr.cleanup()
+        break
+
+    except Exception as e:
+        print("Error:", e)

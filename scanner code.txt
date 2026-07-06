@@ -1,0 +1,18 @@
+import serial
+import time
+
+# Connect to device
+device = serial.Serial("/dev/ttyACM0", 115200, timeout=0.5)
+
+# Function to send command and read response
+def send_command(command):
+    device.write(command)
+    time.sleep(0.2)
+    response = device.read(device.in_waiting)
+    print("Response:", response)
+
+# Example: Factory reset
+send_command(b"\x02\xf0\x030D0100.")
+
+# Example: Get baud rate
+send_command(b"\x02\xf0\x03060702?.")

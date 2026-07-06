@@ -1,0 +1,418 @@
+# 🔧 أساسيات التحكم في السيرفو - من الصفر
+
+---
+
+## 🤔 السيرفو إيه أصلاً؟
+
+**السيرفو = محرك صغير يدور لزوايا محددة**
+
+- مش زي الموتور العادي الي يدور لا نهائي 🔄
+- السيرفو يدور لزاوية معينة ويقف ⭕
+
+```
+0°    90°    180°
+|─────|─────|
+قفل   نص    فتح
+```
+
+---
+
+## 🔌 التوصيلات:
+
+السيرفو فيه **3 أسلاك**:
+
+```
+🔴 أحمر   → 5V (كهرباء)
+🟤 بني    → GND (أرضي)
+🟠 برتقالي → GPIO Pin (إشارة التحكم)
+```
+
+### مثال توصيل:
+```
+السيرفو          Raspberry Pi
+──────          ─────────────
+🔴 أحمر    →    Pin 2 (5V)
+🟤 بني     →    Pin 6 (GND)
+🟠 برتقالي →    Pin 16 (GPIO)
+```
+
+---
+
+## 💡 كيف يعمل السيرفو؟
+
+السيرفو **لا يفهم "روح 90 درجة"** مباشرة!
+
+بل يفهم: **"خلي الإشارة ON لمدة معينة"**
+
+### PWM = Pulse Width Modulation (تعديل عرض النبضة)
+
+```
+إشارة قصيرة  → زاوية صغيرة (0°)
+إشارة متوسطة → زاوية متوسطة (90°)
+إشارة طويلة  → زاوية كبيرة (180°)
+```
+
+---
+
+## 📊 العلاقة بين Duty Cycle والزاوية:
+
+```python
+Duty 2%  → 0°   (مقفول تماماً)
+Duty 7%  → 90°  (في النص)
+Duty 12% → 180° (مفتوح تماماً)
+```
+
+### رسم توضيحي:
+
+```
+Duty 2% (0°):
+██|__________________|
+  قصير جداً
+
+Duty 7% (90°):
+███████|_____________|
+  متوسط
+
+Duty 12% (180°):
+████████████|________|
+  طويل
+```
+
+---
+
+## 🎯 الكود الأساسي - خطوة خطوة
+
+### الخطوة 1️⃣: استيراد المكتبات
+
+```python
+import RPi.GPIO as GPIO
+import time
+```
+
+---
+
+### الخطوة 2️⃣: إعداد GPIO
+
+```python
+# اختر رقم البن
+SERVO_PIN = 16
+
+# اضبط نظام الترقيم
+GPIO.setmode(GPIO.BOARD)  # استخدام رقم البن الفيزيائي
+
+# اضبط البن كـ Output (خرج)
+GPIO.setup(SERVO_PIN, GPIO.OUT)
+```
+
+---
+
+### الخطوة 3️⃣: إنشاء PWM
+
+```python
+# PWM(رقم_البن, التردد)
+servo = GPIO.PWM(SERVO_PIN, 50)
+
+# 50 = 50Hz (تردد السيرفو الطبيعي)
+```
+
+---
+
+### الخطوة 4️⃣: تشغيل PWM
+
+```python
+# start(القيمة_الابتدائية)
+servo.start(0)
+
+# 0 = ابدأ بدون إشارة
+```
+
+---
+
+### الخطوة 5️⃣: تحريك السيرفو
+
+```python
+# ChangeDutyCycle(الـ Duty)
+servo.ChangeDutyCycle(2)   # روح 0°
+time.sleep(1)              # انتظر ثانية
+
+servo.ChangeDutyCycle(12)  # روح 180°
+time.sleep(1)
+
+servo.ChangeDutyCycle(7)   # روح 90°
+time.sleep(1)
+```
+
+---
+
+### الخطوة 6️⃣: إيقاف PWM وتنظيف
+
+```python
+servo.stop()        # أوقف PWM
+GPIO.cleanup()      # نظف GPIO
+```
+
+---
+
+## 📝 الكود الكامل:
+
+```python
+import RPi.GPIO as GPIO
+import time
+
+# ===== 1. الإعدادات =====
+SERVO_PIN = 16
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(SERVO_PIN, GPIO.OUT)
+
+# ===== 2. إنشاء PWM =====
+servo = GPIO.PWM(SERVO_PIN, 50)
+
+# ===== 3. بدء التشغيل =====
+servo.start(0)
+
+# ===== 4. التحريك =====
+print("السيرفو عند 0°")
+servo.ChangeDutyCycle(2)
+time.sleep(2)
+
+print("السيرفو عند 90°")
+servo.ChangeDutyCycle(7)
+time.sleep(2)
+
+print("السيرفو عند 180°")
+servo.ChangeDutyCycle(12)
+time.sleep(2)
+
+print("رجوع للصفر")
+servo.ChangeDutyCycle(2)
+time.sleep(1)
+
+# ===== 5. الإيقاف =====
+servo.stop()
+GPIO.cleanup()
+print("✅ تم!")
+```
+
+---
+
+## 🎮 كود تفاعلي (تحكم يدوي):
+
+```python
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(16, GPIO.OUT)
+servo = GPIO.PWM(16, 50)
+servo.start(0)
+
+print("=== التحكم في السيرفو ===")
+print("1 = 0°")
+print("2 = 90°")
+print("3 = 180°")
+print("q = خروج")
+
+try:
+    while True:
+        choice = input("\nاختر: ")
+        
+        if choice == "1":
+            servo.ChangeDutyCycle(2)
+            print("→ 0°")
+        elif choice == "2":
+            servo.ChangeDutyCycle(7)
+            print("→ 90°")
+        elif choice == "3":
+            servo.ChangeDutyCycle(12)
+            print("→ 180°")
+        elif choice == "q":
+            break
+        
+        time.sleep(0.5)
+        servo.ChangeDutyCycle(0)  # أوقف الإشارة
+
+except KeyboardInterrupt:
+    pass
+
+servo.stop()
+GPIO.cleanup()
+print("\n✅ تم الإيقاف")
+```
+
+---
+
+## 🔢 جدول الأرقام المهمة:
+
+| الزاوية | Duty Cycle | الاستخدام |
+|---------|-----------|-----------|
+| **0°** | 2 | باب مقفول |
+| **45°** | 4.5 | ربع فتح |
+| **90°** | 7 | نص فتح |
+| **135°** | 9.5 | ثلاثة أرباع |
+| **180°** | 12 | باب مفتوح |
+
+---
+
+## ⚙️ دالة تحويل الزاوية لـ Duty:
+
+```python
+def angle_to_duty(angle):
+    """
+    تحويل الزاوية (0-180) إلى Duty Cycle
+    """
+    duty = (angle / 18) + 2
+    return duty
+
+# أمثلة:
+print(angle_to_duty(0))    # → 2
+print(angle_to_duty(90))   # → 7
+print(angle_to_duty(180))  # → 12
+```
+
+### استخدام الدالة:
+
+```python
+import RPi.GPIO as GPIO
+import time
+
+def angle_to_duty(angle):
+    return (angle / 18) + 2
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(16, GPIO.OUT)
+servo = GPIO.PWM(16, 50)
+servo.start(0)
+
+# الآن استخدم الزوايا مباشرة!
+servo.ChangeDutyCycle(angle_to_duty(0))
+time.sleep(1)
+
+servo.ChangeDutyCycle(angle_to_duty(90))
+time.sleep(1)
+
+servo.ChangeDutyCycle(angle_to_duty(180))
+time.sleep(1)
+
+servo.stop()
+GPIO.cleanup()
+```
+
+---
+
+## 🎯 دالة أفضل (مع إيقاف تلقائي):
+
+```python
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(16, GPIO.OUT)
+servo = GPIO.PWM(16, 50)
+servo.start(0)
+
+def move_servo(angle):
+    """
+    تحريك السيرفو لزاوية معينة
+    """
+    duty = (angle / 18) + 2
+    servo.ChangeDutyCycle(duty)
+    time.sleep(0.5)  # انتظر حتى يصل
+    servo.ChangeDutyCycle(0)  # أوقف الإشارة (يوفر طاقة)
+
+# الاستخدام
+move_servo(0)
+time.sleep(1)
+
+move_servo(90)
+time.sleep(1)
+
+move_servo(180)
+
+servo.stop()
+GPIO.cleanup()
+```
+
+---
+
+## ❓ أسئلة شائعة:
+
+### 1. ليه بنكتب `ChangeDutyCycle(0)` بعد الحركة؟
+
+```python
+servo.ChangeDutyCycle(7)   # حرك للزاوية
+time.sleep(0.5)            # انتظر حتى يصل
+servo.ChangeDutyCycle(0)   # أوقف الإشارة
+```
+
+**السبب:**
+- السيرفو وصل للزاوية ✅
+- لو سبنا الإشارة = **استهلاك كهرباء + صوت أزيز** ⚡🔊
+- `ChangeDutyCycle(0)` = أوقف لكن السيرفو يفضل في مكانه 🎯
+
+---
+
+### 2. ليه التردد 50Hz؟
+
+```python
+servo = GPIO.PWM(SERVO_PIN, 50)
+```
+
+**السبب:**
+- معظم السيرفوهات تعمل على **50Hz**
+- يعني **50 إشارة في الثانية**
+- ده المعيار القياسي للسيرفو 📏
+
+---
+
+### 3. الفرق بين `BOARD` و `BCM`؟
+
+```python
+GPIO.setmode(GPIO.BOARD)  # رقم البن الفيزيائي (1-40)
+GPIO.setmode(GPIO.BCM)    # رقم GPIO (مثل GPIO23)
+```
+
+**BOARD أسهل للمبتدئين!** 👍
+
+---
+
+## 🧪 تمارين عملية:
+
+### تمرين 1: باب أوتوماتيكي
+```python
+# افتح لمدة 5 ثواني ثم اقفل
+servo.ChangeDutyCycle(12)  # افتح
+time.sleep(5)
+servo.ChangeDutyCycle(2)   # اقفل
+```
+
+### تمرين 2: حركة ناعمة
+```python
+# حرك من 0 لـ 180 ببطء
+for angle in range(0, 181, 10):
+    duty = (angle / 18) + 2
+    servo.ChangeDutyCycle(duty)
+    time.sleep(0.1)
+```
+
+### تمرين 3: ذهاب وعودة
+```python
+while True:
+    servo.ChangeDutyCycle(2)   # يمين
+    time.sleep(1)
+    servo.ChangeDutyCycle(12)  # شمال
+    time.sleep(1)
+```
+
+---
+
+## ✅ الخلاصة في 5 نقاط:
+
+```python
+1. GPIO.setup(pin, GPIO.OUT)     # جهز البن
+2. servo = GPIO.PWM(pin, 50)     # اعمل PWM بـ 50Hz
+3. servo.start(0)                 # ابدأ
+4. servo.ChangeDutyCycle(2/7/12) # حرك (0°/90°/180°)
+5. servo.stop() + GPIO.cleanup() # نظف
+```
+
+**احفظي الأرقام: 2، 7، 12** وأنت تمام! 🚀

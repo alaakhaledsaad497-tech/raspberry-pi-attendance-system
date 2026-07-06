@@ -1,0 +1,6 @@
+الخلاصة في 5 نقاط:
+python1. reader = RFID()           # اعمل قارئ
+2. card_id = reader.read_id() # اقرأ الكارت
+3. if card_id:               # لو فيه كارت
+4. if card_id == my_card:    # قارن الرقم
+5. time.sleep(1)             # انتظر ثانية

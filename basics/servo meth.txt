@@ -1,0 +1,23 @@
+import lgpio
+import time
+
+# 1️⃣ فتح
+h = lgpio.gpiochip_open(0)
+servo_pin = 18
+
+try:
+    # 2️⃣ تحريك
+    lgpio.tx_servo(h, servo_pin, 500)    # 0°
+    time.sleep(1)
+    lgpio.tx_servo(h, servo_pin, 1500)   # 90°
+    time.sleep(1)
+    lgpio.tx_servo(h, servo_pin, 2500)   # 180°
+    time.sleep(1)
+
+except KeyboardInterrupt:
+    print("توقف!")
+
+finally:
+    # 3️⃣ إيقاف + 4️⃣ إغلاق
+    lgpio.tx_servo(h, servo_pin, 0)
+    lgpio.gpiochip_close(h)

@@ -1,0 +1,86 @@
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)                    # Set up BCM GPIO numbering
+GPIO.setwarnings(False)                   # disable warnings
+
+SERVO_PIN = 18                            # GPIO18 as Servo pin
+GPIO.setup(SERVO_PIN,GPIO.OUT)            # Set GPIO18 as an output
+servo = GPIO.PWM(SERVO_PIN,50)            # Set PWM to 50Hz
+servo.start(0)                            # Start PWM at 0% duty cycle
+
+try:
+    while(1):
+        # Rotate Servo 0 to 180 degrees by changing duty cycle
+        for i in range(0,180,1):
+            servo.ChangeDutyCycle(2+(i/18))
+            time.sleep(0.1)
+            servo.ChangeDutyCycle(0)
+            time.sleep(0.1)
+        # Rotate Servo 180 to 0 degrees by changing duty cycle
+        for i in range(180,0,-1):
+            servo.ChangeDutyCycle(2+(i/18))
+            time.sleep(0.1)
+            servo.ChangeDutyCycle(0)
+            time.sleep(0.1)
+
+except KeyboardInterrupt:                  # If CTRL+C is pressed, exit cleanly:
+    pass
+
+servo.stop()  # Stop the PWM output
+GPIO.cleanup()
+-----------------------------------------------------------------
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(17, GPIO.OUT)
+GPIO.setwarnings(False)
+
+angleOffset = 5
+
+print("\n+------------/ Servo Motor Controller /-----------+")
+print("|                                                 |")
+print("| The servo must be connected to pin 11 / GPIO 17 |")
+print("|                                                 |")
+print("+-------------------------------------------------+\n")
+
+print("How do you want to control the servo?")
+choice = int(input("1. Choose an angle\n2. Rotate from 0 to 180 degrees\n"))
+
+
+if choice == 2:
+    numCycles = int(input("Enter the number of back-and-forth cycles the servo should perform:\n"))
+
+    pwm = GPIO.PWM(17, 100)
+    pwm.start(5)
+
+    angle1 = 0
+    duty1 = float(angle1) / 10 + angleOffset
+
+    angle2 = 180
+    duty2 = float(angle2) / 10 + angleOffset
+
+    i = 0
+
+    while i <= numCycles:
+        pwm.ChangeDutyCycle(duty1)
+        time.sleep(0.8)
+        pwm.ChangeDutyCycle(duty2)
+        time.sleep(0.8)
+        i += 1
+
+    GPIO.cleanup()
+
+
+if choice == 1:
+    angle = float(input("Enter the desired angle:\n"))
+    duration = int(input("Enter the duration for which the servo should hold its position (in seconds):\n"))
+
+    pwm = GPIO.PWM(17, 100)
+    pwm.start(5)
+
+    selectedAngle = angle / 10 + angleOffset
+    pwm.ChangeDutyCycle(selectedAngle)
+    time.sleep(duration)
+    GPIO.cleanup()

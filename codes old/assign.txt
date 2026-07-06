@@ -1,0 +1,38 @@
+from razrc522 import RFID
+import time
+import requests
+
+# رابط الـ API بتاعك
+URL = "http://YOUR_BACKEND_URL/api/assign-card"  # حطي هنا IP السيرفر + البورت + ال Route
+
+# شغّل القارئ
+reader = RFID()
+reader.set_antenna(True)
+
+print("حطي الكارت بالقرب من القارئ...")
+
+while True:
+    success, _ = reader.request()  # جرب قراءة الكارت
+    if success:  # لو القراءة نجحت
+        success, uid = reader.anticoll()  # اقرأ الرقم التعريفي للكارت
+        if success:  # لو القراءة للرقم نجحت
+            # نسخة أبسط جدًا لتحويل UID لنص
+            uid_str = str(uid)
+            print("رقم الكارت:", uid_str)
+
+            employee_id = input("ادخلي رقم الموظف: ")
+
+            data = {
+                "employeeId": employee_id,
+                "cardNumber": uid_str
+            }
+
+            # حاول تبعت البيانات للسيرفر
+            try:
+                requests.post(URL, json=data)
+                print("✅ الكارت اتسجل بنجاح")
+            except:
+                print("❌ السيرفر مش متوصل")
+
+            time.sleep(1)  # عشان ما يقرأش نفس الكارت بسر
+كوووود اللللاسااااااين
